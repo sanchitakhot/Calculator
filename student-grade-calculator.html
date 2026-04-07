@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Grade Calculator</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #fbcfe8 0%, #e9d5ff 52%, #ddd6fe 100%);
+      color: #3b0764;
+    }
+    .container {
+      max-width: 760px;
+      margin: 40px auto;
+      background: #faf5ff;
+      border-radius: 12px;
+      border: 1px solid #e9d5ff;
+      box-shadow: 0 10px 28px rgba(124, 58, 237, 0.16);
+      padding: 24px;
+    }
+    h1 {
+      margin-top: 0;
+      font-size: 28px;
+    }
+    p {
+      margin-top: 6px;
+      color: #6b21a8;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .subject {
+      border: 1px solid #d8b4fe;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 10px;
+      background: #fae8ff;
+    }
+    label {
+      font-size: 14px;
+      display: block;
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+    input[type="number"] {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px;
+      border: 1px solid #a855f7;
+      border-radius: 8px;
+      font-size: 14px;
+      background: #f8f0ff;
+      color: #3b0764;
+    }
+    input[type="number"]::placeholder {
+      color: #7e22ce;
+    }
+    .actions {
+      margin-top: 16px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    button {
+      border: 0;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .primary {
+      background: #ec4899;
+      color: #ffffff;
+      border: 1px solid #db2777;
+    }
+    .secondary {
+      background: #8b5cf6;
+      color: #ffffff;
+      border: 1px solid #7c3aed;
+    }
+    .result {
+      margin-top: 20px;
+      border: 1px solid #d8b4fe;
+      background: #f3e8ff;
+      border-radius: 10px;
+      padding: 14px;
+      display: none;
+    }
+    .error {
+      margin-top: 12px;
+      color: #db2777;
+      font-weight: 600;
+      display: none;
+    }
+    .grade-scale {
+      margin-top: 18px;
+      font-size: 14px;
+      color: #6b21a8;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Student Grade Calculator</h1>
+    <p>Enter obtained and maximum marks for each subject.</p>
+
+    <label for="subjectCount">Number of Subjects</label>
+    <input id="subjectCount" type="number" min="1" value="3">
+
+    <div class="actions">
+      <button class="secondary" id="generateBtn" type="button">Generate Subject Fields</button>
+      <button class="primary" id="calculateBtn" type="button">Calculate Result</button>
+    </div>
+
+    <div id="subjectsContainer"></div>
+
+    <div id="errorBox" class="error"></div>
+
+    <div id="resultBox" class="result">
+      <div><strong>Total Marks Obtained:</strong> <span id="totalObtained"></span></div>
+      <div><strong>Total Maximum Marks:</strong> <span id="totalMaximum"></span></div>
+      <div><strong>Percentage:</strong> <span id="percentage"></span></div>
+      <div><strong>Grade:</strong> <span id="grade"></span></div>
+    </div>
+
+    <div class="grade-scale">
+      <strong>Grade Scale:</strong> A+ (90+), A (80-89.99), B (70-79.99), C (60-69.99), D (50-59.99), F (&lt;50)
+    </div>
+  </div>
+
+  <script>
+    const subjectCountInput = document.getElementById("subjectCount");
+    const generateBtn = document.getElementById("generateBtn");
+    const calculateBtn = document.getElementById("calculateBtn");
+    const subjectsContainer = document.getElementById("subjectsContainer");
+    const resultBox = document.getElementById("resultBox");
+    const errorBox = document.getElementById("errorBox");
+
+    function getGrade(percentage) {
+      if (percentage >= 90) return "A+";
+      if (percentage >= 80) return "A";
+      if (percentage >= 70) return "B";
+      if (percentage >= 60) return "C";
+      if (percentage >= 50) return "D";
+      return "F";
+    }
+
+    function showError(message) {
+      errorBox.textContent = message;
+      errorBox.style.display = "block";
+      resultBox.style.display = "none";
+    }
+
+    function clearError() {
+      errorBox.textContent = "";
+      errorBox.style.display = "none";
+    }
+
+    function generateSubjectFields() {
+      clearError();
+      resultBox.style.display = "none";
+
+      const count = Number(subjectCountInput.value);
+      if (!Number.isInteger(count) || count <= 0) {
+        showError("Please enter a valid number of subjects (1 or more).");
+        return;
+      }
+
+      subjectsContainer.innerHTML = "";
+
+      for (let i = 1; i <= count; i += 1) {
+        const block = document.createElement("div");
+        block.className = "subject";
+        block.innerHTML = `
+          <strong>Subject ${i}</strong>
+          <div class="row">
+            <div>
+              <label for="obtained-${i}">Obtained Marks</label>
+              <input id="obtained-${i}" type="number" min="0" step="0.01" placeholder="e.g. 86">
+            </div>
+            <div>
+              <label for="maximum-${i}">Maximum Marks</label>
+              <input id="maximum-${i}" type="number" min="1" step="0.01" placeholder="e.g. 100">
+            </div>
+          </div>
+        `;
+        subjectsContainer.appendChild(block);
+      }
+    }
+
+    function calculateResult() {
+      clearError();
+
+      const count = Number(subjectCountInput.value);
+      if (!Number.isInteger(count) || count <= 0) {
+        showError("Please enter a valid number of subjects first.");
+        return;
+      }
+
+      let totalObtained = 0;
+      let totalMaximum = 0;
+
+      for (let i = 1; i <= count; i += 1) {
+        const obtainedInput = document.getElementById(`obtained-${i}`);
+        const maximumInput = document.getElementById(`maximum-${i}`);
+
+        if (!obtainedInput || !maximumInput) {
+          showError("Generate subject fields first.");
+          return;
+        }
+
+        const obtained = Number(obtainedInput.value);
+        const maximum = Number(maximumInput.value);
+
+        if (!Number.isFinite(obtained) || !Number.isFinite(maximum)) {
+          showError(`Please enter valid numeric marks for subject ${i}.`);
+          return;
+        }
+        if (obtained < 0 || maximum <= 0 || obtained > maximum) {
+          showError(`Invalid marks in subject ${i}. Ensure 0 <= obtained <= maximum.`);
+          return;
+        }
+
+        totalObtained += obtained;
+        totalMaximum += maximum;
+      }
+
+      const percentage = (totalObtained / totalMaximum) * 100;
+      const grade = getGrade(percentage);
+
+      document.getElementById("totalObtained").textContent = totalObtained.toFixed(2);
+      document.getElementById("totalMaximum").textContent = totalMaximum.toFixed(2);
+      document.getElementById("percentage").textContent = `${percentage.toFixed(2)}%`;
+      document.getElementById("grade").textContent = grade;
+      resultBox.style.display = "block";
+    }
+
+    generateBtn.addEventListener("click", generateSubjectFields);
+    calculateBtn.addEventListener("click", calculateResult);
+
+    generateSubjectFields();
+  </script>
+</body>
+</html>
